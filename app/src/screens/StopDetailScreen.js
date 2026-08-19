@@ -1,0 +1,101 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Pressable } from "react-native";
+import { fetchArrivals } from "../api/client";
+import { addFavorite } from "../utils/favorites";
+
+const REFRESH_INTERVAL_MS = 20000; // 20s
+
+export default function StopDetailScreen({ route }) {
+  const { stopId } = route.params;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [arrivals, setArrivals] = useState([]);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await fetchArrivals(stopId);
+      // TODO: ajustar según la forma real de la respuesta de la API de EMT
+      setArrivals(data?.data?.[0]?.Arrive ?? []);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [stopId]);
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text>Cargando llegadas…</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Parada {stopId}</Text>
+        <Pressable
+          onPress={() => addFavorite({ stopId })}
+          style={styles.favButton}
+        >
+          <Text style={styles.favButtonText}>☆ Guardar</Text>
+        </Pressable>
+      </View>
+
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      <FlatList
+        data={arrivals}
+        keyExtractor={(item, idx) => `${item.line}-${idx}`}
+        contentContainerStyle={{ padding: 16, gap: 8 }}
+        renderItem={({ item }) => (
+          <View style={styles.arrivalItem}>
+            <Text style={styles.line}>Línea {item.line}</Text>
+            <Text style={styles.minutes}>
+              {Math.round((item.estimateArrive ?? 0) / 60)} min
+            </Text>
+          </View>
+        )}
+        ListEmptyComponent={
+          <View style={styles.center}>
+            <Text>No hay llegadas previstas ahora mismo.</Text>
+          </View>
+        }
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24, gap: 8 },
+  error: { color: "#c62828", textAlign: "center", padding: 8 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  headerTitle: { fontSize: 20, fontWeight: "700" },
+  favButton: { padding: 8 },
+  favButtonText: { color: "#1565c0", fontWeight: "600" },
+  arrivalItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
+    padding: 16,
+  },
+  line: { fontSize: 16, fontWeight: "600" },
+  minutes: { fontSize: 16, fontWeight: "700", color: "#1565c0" },
+});

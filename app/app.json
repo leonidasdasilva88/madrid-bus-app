@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Madrid Bus App",
+    "slug": "madrid-bus-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#1565c0",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Necesitamos tu ubicación para mostrarte las paradas de bus cercanas."
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "package": "com.leonidas88.madridbusapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "11864a80-1e3d-4f42-80b8-9359eea6b3e9"
+      }
+    }
+  }
+}
