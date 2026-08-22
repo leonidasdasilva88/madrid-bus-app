@@ -132,8 +132,10 @@ async function getNearbyStops(lat, lon, radius = 300) {
   );
 
   if (!response.ok) {
-    throw new Error(`Error buscando paradas cercanas: ${response.status} ${response.statusText}`);
-  }
+  const errorBody = await response.text();
+  console.log("Login EMT falló, cuerpo de la respuesta:", errorBody);
+  throw new Error(`Login EMT falló: ${response.status} ${response.statusText} — ${errorBody}`);
+}
 
   return response.json();
 }
