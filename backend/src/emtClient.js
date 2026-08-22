@@ -20,20 +20,30 @@ async function getToken() {
     return cachedToken;
   }
 
+  // Login con app registrada (X-ClientId/passKey): solo funciona una vez que
+  // Mobility Labs aprueba tu aplicación. Mientras tanto, usamos el login
+  // genérico con el email/contraseña de tu cuenta de desarrollador, que
+  // funciona desde el momento en que confirmas el email (con cuota más baja).
   const clientId = process.env.EMT_CLIENT_ID;
   const passKey = process.env.EMT_PASS_KEY;
+  const email = process.env.EMT_EMAIL;
+  const password = process.env.EMT_PASSWORD;
 
-  if (!clientId || !passKey) {
+  let headers;
+  if (clientId && passKey) {
+    headers = { "X-ClientId": clientId, passKey: passKey };
+  } else if (email && password) {
+    headers = { email, password };
+  } else {
     throw new Error(
-      "Faltan EMT_CLIENT_ID o EMT_PASS_KEY. Configura el archivo .env a partir de .env.example"
+      "Faltan credenciales de EMT. Configura EMT_EMAIL/EMT_PASSWORD (o EMT_CLIENT_ID/EMT_PASS_KEY una vez aprobada tu app) en .env"
     );
   }
 
   const response = await fetch(`${BASE_URL}/mobilitylabs/user/login/`, {
     method: "GET",
     headers: {
-      email: clientId, // OJO: algunos endpoints piden "email" e "password" como headers,
-      password: passKey, // revisa el nombre exacto de los headers en tu panel de desarrollador
+      ...headers,
       "Content-Type": "application/json",
     },
   });
@@ -44,8 +54,14 @@ async function getToken() {
 
   const data = await response.json();
 
-  // La estructura exacta de la respuesta puede variar; ajusta estos campos
-  // según lo que devuelva realmente tu cuenta (revisa data.data[0] en consola).
+  // Log temporal de depuración: mira los logs de Render tras la próxima petición
+  // para confirmar la forma exacta de la respuesta, y luego puedes borrar esta línea.
+  console.log("Respuesta login EMT:", JSON.stringify(data));
+
+  if (data?.code && data.code !== "00") {
+    throw new Error(`Login EMT devolvió error. code=${data.code} description=${data.description}`);
+  }
+
   const accessToken = data?.data?.[0]?.accessToken;
   if (!accessToken) {
     throw new Error("La respuesta de login no incluyó un accessToken. Revisa el payload.");
