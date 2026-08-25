@@ -82,7 +82,7 @@ async function getArrivals(stopId) {
   const token = await getToken();
 
   const response = await fetch(
-    `${BASE_URL}/transport/busemtmad/stops/${stopId}/arrives/`,
+    `${BASE_URL}/transport/busemtmad/stops/${stopId}/arrives/1/`,
     {
       method: "POST",
       headers: {
@@ -93,15 +93,22 @@ async function getArrivals(stopId) {
         stopId,
         // Puedes filtrar por línea concreta si quieres, o dejarlo vacío para todas
         cultureInfo: "ES",
+        Text_StopRequired_YN: "N",
+        Text_EstimationsRequired_YN: "Y",
+        Text_IncidencesRequired_YN: "N",
+        DateTime_UTC: new Date().toISOString(),
       }),
     }
   );
 
   if (!response.ok) {
-    throw new Error(`Error consultando llegadas: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(`Error consultando llegadas: ${response.status} ${response.statusText} — ${errorBody}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log("Respuesta arrives EMT:", JSON.stringify(data));
+  return data;
 }
 
 /**
@@ -132,9 +139,7 @@ async function getNearbyStops(lat, lon, radius = 300) {
   );
 
   if (!response.ok) {
-  const errorBody = await response.text();
-  console.log("Login EMT falló, cuerpo de la respuesta:", errorBody);
-  throw new Error(`Login EMT falló: ${response.status} ${response.statusText} — ${errorBody}`);
+    throw new Error(`Error buscando paradas cercanas: ${response.status} ${response.statusText}`);
 }
 
   return response.json();
