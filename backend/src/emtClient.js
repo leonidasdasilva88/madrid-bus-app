@@ -58,10 +58,7 @@ async function getToken() {
   // para confirmar la forma exacta de la respuesta, y luego puedes borrar esta línea.
   console.log("Respuesta login EMT:", JSON.stringify(data));
 
-  if (data?.code && data.code !== "00") {
-    throw new Error(`Login EMT devolvió error. code=${data.code} description=${data.description}`);
-  }
-
+ 
   const accessToken = data?.data?.[0]?.accessToken;
   if (!accessToken) {
     throw new Error("La respuesta de login no incluyó un accessToken. Revisa el payload.");
