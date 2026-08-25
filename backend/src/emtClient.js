@@ -79,7 +79,7 @@ async function getArrivals(stopId) {
   const token = await getToken();
 
   const response = await fetch(
-    `${BASE_URL}/transport/busemtmad/stops/${stopId}/arrives/1/`,
+    `https://openapi.emtmadrid.es/v3/transport/busemtmad/stops/${stopId}/arrives/all/`,
     {
       method: "POST",
       headers: {
