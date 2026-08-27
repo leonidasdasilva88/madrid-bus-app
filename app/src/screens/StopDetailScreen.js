@@ -57,14 +57,21 @@ export default function StopDetailScreen({ route }) {
         data={arrivals}
         keyExtractor={(item, idx) => `${item.line}-${idx}`}
         contentContainerStyle={{ padding: 16, gap: 8 }}
-        renderItem={({ item }) => (
-          <View style={styles.arrivalItem}>
-            <Text style={styles.line}>Línea {item.line}</Text>
-            <Text style={styles.minutes}>
-              {Math.round((item.estimateArrive ?? 0) / 60)} min
-            </Text>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          // EMT usa 999999 como valor "sin estimación fiable" — no es un tiempo real.
+          const noEstimate = !item.estimateArrive || item.estimateArrive >= 999999;
+          return (
+            <View style={styles.arrivalItem}>
+              <View>
+                <Text style={styles.line}>Línea {item.line}</Text>
+                <Text style={styles.destination}>{item.destination}</Text>
+              </View>
+              <Text style={styles.minutes}>
+                {noEstimate ? "―" : `${Math.round(item.estimateArrive / 60)} min`}
+              </Text>
+            </View>
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.center}>
             <Text>No hay llegadas previstas ahora mismo.</Text>
@@ -97,5 +104,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   line: { fontSize: 16, fontWeight: "600" },
+  destination: { fontSize: 13, color: "#666", marginTop: 2 },
   minutes: { fontSize: 16, fontWeight: "700", color: "#1565c0" },
 });
