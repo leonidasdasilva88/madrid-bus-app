@@ -3,7 +3,7 @@
 // En desarrollo, usa la IP local de tu ordenador (no "localhost", porque el
 // móvil físico o el emulador no lo resuelven igual). Ejemplo: "http://192.168.1.35:3000"
 
-const BASE_URL = "http://192.168.1.1/:3000"; // TODO: cambia esto por la IP de tu backend
+const BASE_URL = "https://madrid-bus-backend.onrender.com"; // TODO: cambia esto por la IP de tu backend
 
 export async function fetchArrivals(stopId) {
   const res = await fetch(`${BASE_URL}/api/llegadas/${stopId}`);
