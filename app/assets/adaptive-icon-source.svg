@@ -1,0 +1,17 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sin fondo: Android superpone su propia forma/color de fondo.
+       El contenido se mantiene dentro de la "zona segura" central (~66%)
+       para que no lo recorte la máscara del sistema (círculo, squircle, etc). -->
+  <g transform="translate(0, 40)">
+    <rect x="252" y="360" width="520" height="320" rx="54" fill="#ffffff"/>
+    <rect x="296" y="406" width="432" height="134" rx="20" fill="#1565c0"/>
+    <rect x="496" y="406" width="12" height="134" fill="#ffffff"/>
+    <rect x="616" y="406" width="12" height="134" fill="#ffffff"/>
+    <rect x="252" y="640" width="520" height="36" rx="18" fill="#ffcc00"/>
+    <circle cx="360" cy="710" r="56" fill="#212121"/>
+    <circle cx="360" cy="710" r="24" fill="#ffffff"/>
+    <circle cx="664" cy="710" r="56" fill="#212121"/>
+    <circle cx="664" cy="710" r="24" fill="#ffffff"/>
+    <circle cx="730" cy="620" r="14" fill="#ffcc00"/>
+  </g>
+</svg>

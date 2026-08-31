@@ -20,6 +20,13 @@ export default function HomeScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Ver paradas cercanas</Text>
       </Pressable>
+
+      <Pressable
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => navigation.navigate("Favorites")}
+      >
+        <Text style={[styles.buttonText, styles.secondaryButtonText]}>⭐ Mis favoritos</Text>
+      </Pressable>
     </View>
   );
 }
@@ -34,5 +41,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
+  secondaryButton: {
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#1565c0",
+  },
+  secondaryButtonText: { color: "#1565c0" },
   buttonText: { color: "white", fontSize: 16, fontWeight: "600" },
 });

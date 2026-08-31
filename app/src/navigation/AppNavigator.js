@@ -6,6 +6,7 @@ import HomeScreen from "../screens/HomeScreen";
 import SearchStopScreen from "../screens/SearchStopScreen";
 import NearbyStopsScreen from "../screens/NearbyStopsScreen";
 import StopDetailScreen from "../screens/StopDetailScreen";
+import FavoritesScreen from "../screens/FavoritesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +18,7 @@ export default function AppNavigator() {
         <Stack.Screen name="SearchStop" component={SearchStopScreen} options={{ title: "Buscar parada" }} />
         <Stack.Screen name="NearbyStops" component={NearbyStopsScreen} options={{ title: "Paradas cercanas" }} />
         <Stack.Screen name="StopDetail" component={StopDetailScreen} options={{ title: "Llegadas" }} />
+        <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: "Favoritos" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

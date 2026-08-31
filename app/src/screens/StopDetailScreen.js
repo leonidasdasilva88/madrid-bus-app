@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, Pressable } from "react-native";
 import { fetchArrivals } from "../api/client";
-import { addFavorite } from "../utils/favorites";
+import { addFavorite, getFavorites } from "../utils/favorites";
 
 const REFRESH_INTERVAL_MS = 20000; // 20s
 
@@ -10,6 +10,19 @@ export default function StopDetailScreen({ route }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [arrivals, setArrivals] = useState([]);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const favs = await getFavorites();
+      setIsFavorite(favs.some((f) => f.stopId === stopId));
+    })();
+  }, [stopId]);
+
+  const handleAddFavorite = async () => {
+    await addFavorite({ stopId });
+    setIsFavorite(true);
+  };
 
   const load = useCallback(async () => {
     try {
@@ -44,10 +57,13 @@ export default function StopDetailScreen({ route }) {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Parada {stopId}</Text>
         <Pressable
-          onPress={() => addFavorite({ stopId })}
+          onPress={handleAddFavorite}
+          disabled={isFavorite}
           style={styles.favButton}
         >
-          <Text style={styles.favButtonText}>☆ Guardar</Text>
+          <Text style={styles.favButtonText}>
+            {isFavorite ? "★ Guardada" : "☆ Guardar"}
+          </Text>
         </Pressable>
       </View>
 

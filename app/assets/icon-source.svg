@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect width="1024" height="1024" rx="220" fill="#1565c0"/>
+
+  <!-- Autobús -->
+  <g>
+    <!-- Carrocería -->
+    <rect x="222" y="330" width="580" height="360" rx="60" fill="#ffffff"/>
+    <!-- Franja de ventanas -->
+    <rect x="270" y="380" width="484" height="150" rx="24" fill="#1565c0"/>
+    <!-- Divisiones de ventanas -->
+    <rect x="490" y="380" width="14" height="150" fill="#ffffff"/>
+    <rect x="620" y="380" width="14" height="150" fill="#ffffff"/>
+    <!-- Parachoques inferior -->
+    <rect x="222" y="620" width="580" height="40" rx="20" fill="#ffcc00"/>
+    <!-- Ruedas -->
+    <circle cx="340" cy="700" r="62" fill="#212121"/>
+    <circle cx="340" cy="700" r="26" fill="#ffffff"/>
+    <circle cx="684" cy="700" r="62" fill="#212121"/>
+    <circle cx="684" cy="700" r="26" fill="#ffffff"/>
+    <!-- Faro -->
+    <circle cx="760" cy="600" r="16" fill="#ffcc00"/>
+  </g>
+</svg>
