@@ -117,29 +117,29 @@ async function getArrivals(stopId) {
 async function getNearbyStops(lat, lon, radius = 300) {
   const token = await getToken();
 
+  // Endpoint de la API EMT: paradas alrededor de un punto (OJO: "arroundxy" va así, con doble r).
+  // El orden en la URL es longitud, latitud, radio.
   const response = await fetch(
-    `${BASE_URL}/geo/geolocate/stops/`,
+    `${BASE_URL}/transport/busemtmad/stops/arroundxy/${lon}/${lat}/${radius}/`,
     {
-      method: "POST",
+      method: "GET",
       headers: {
         accessToken: token,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        geometry: {
-          type: "Point",
-          coordinates: [lon, lat],
-        },
-        radius,
-      }),
     }
   );
 
   if (!response.ok) {
-    throw new Error(`Error buscando paradas cercanas: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    console.log("Paradas cercanas EMT falló:", response.status, errorBody);
+    throw new Error(`Error buscando paradas cercanas: ${response.status} ${response.statusText} — ${errorBody}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  // Log temporal para confirmar la forma real de la respuesta
+  console.log("Respuesta paradas cercanas EMT:", JSON.stringify(data).slice(0, 1500));
+  return data;
 }
 
 export { getToken, getArrivals, getNearbyStops };
