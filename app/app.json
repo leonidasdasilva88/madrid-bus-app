@@ -18,19 +18,10 @@
       }
     },
     "android": {
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ],
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1565c0"
-      },
-      "package": "com.leonidas88.madridbusapp"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "11864a80-1e3d-4f42-80b8-9359eea6b3e9"
       }
     }
   }

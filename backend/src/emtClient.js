@@ -49,19 +49,20 @@ async function getToken() {
   });
 
   if (!response.ok) {
-    throw new Error(`Login EMT falló: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    console.log("Login EMT falló, cuerpo de la respuesta:", errorBody);
+    throw new Error(`Login EMT falló: ${response.status} ${response.statusText} — ${errorBody}`);
   }
 
   const data = await response.json();
 
-  // Log temporal de depuración: mira los logs de Render tras la próxima petición
-  // para confirmar la forma exacta de la respuesta, y luego puedes borrar esta línea.
   console.log("Respuesta login EMT:", JSON.stringify(data));
 
- 
   const accessToken = data?.data?.[0]?.accessToken;
   if (!accessToken) {
-    throw new Error("La respuesta de login no incluyó un accessToken. Revisa el payload.");
+    // Solo aquí es un fallo real: hay respuesta pero sin token utilizable
+    // (por ejemplo code 84 = credenciales/app no válidas o no aprobada).
+    throw new Error(`Login EMT no devolvió accessToken. code=${data?.code} description=${data?.description}`);
   }
 
   cachedToken = accessToken;
@@ -88,7 +89,6 @@ async function getArrivals(stopId) {
       },
       body: JSON.stringify({
         stopId,
-        // Puedes filtrar por línea concreta si quieres, o dejarlo vacío para todas
         cultureInfo: "ES",
         Text_StopRequired_YN: "N",
         Text_EstimationsRequired_YN: "Y",
@@ -137,7 +137,7 @@ async function getNearbyStops(lat, lon, radius = 300) {
 
   if (!response.ok) {
     throw new Error(`Error buscando paradas cercanas: ${response.status} ${response.statusText}`);
-}
+  }
 
   return response.json();
 }

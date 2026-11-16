@@ -2,10 +2,10 @@ import React, { useState, useCallback } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { getFavorites, removeFavorite } from "../utils/favorites";
- 
+
 export default function FavoritesScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);
- 
+
   // Recarga la lista cada vez que se vuelve a esta pantalla (por ejemplo,
   // después de añadir una nueva parada como favorita desde StopDetail).
   useFocusEffect(
@@ -20,12 +20,12 @@ export default function FavoritesScreen({ navigation }) {
       };
     }, [])
   );
- 
+
   const handleRemove = async (stopId) => {
     const updated = await removeFavorite(stopId);
     setFavorites(updated);
   };
- 
+
   if (favorites.length === 0) {
     return (
       <View style={styles.center}>
@@ -36,7 +36,7 @@ export default function FavoritesScreen({ navigation }) {
       </View>
     );
   }
- 
+
   return (
     <FlatList
       data={favorites}
@@ -59,7 +59,7 @@ export default function FavoritesScreen({ navigation }) {
     />
   );
 }
- 
+
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24, gap: 8 },
   emptyTitle: { fontSize: 18, fontWeight: "600", textAlign: "center" },
