@@ -80,7 +80,9 @@ export default function NearbyStopsScreen({ navigation }) {
       setStatus("Buscando paradas cercanas…");
       const data = await fetchNearbyStops(latitude, longitude);
       log("respuesta del servidor");
-      setStops(Array.isArray(data?.data) ? data.data : []);
+      const list = Array.isArray(data?.data) ? data.data : [];
+      list.sort((a, b) => (a.metersToPoint ?? 0) - (b.metersToPoint ?? 0));
+      setStops(list);
     } catch (err) {
       log(`error: ${err.message}`);
       setError(err.message);
@@ -127,15 +129,21 @@ export default function NearbyStopsScreen({ navigation }) {
       keyExtractor={(item, idx) => String(item.stopId ?? idx)}
       contentContainerStyle={{ padding: 16, gap: 8 }}
       renderItem={({ item }) => {
-        // La API puede devolver el nombre como "name" o "stopName" según la versión.
-        const name = item.name ?? item.stopName ?? `Parada ${item.stopId}`;
+        const name = item.stopName ?? item.name ?? `Parada ${item.stopId}`;
+        const lines = Array.isArray(item.lines)
+          ? [...new Set(item.lines.map((l) => l.label))].join(", ")
+          : "";
         return (
           <Pressable
             style={styles.stopItem}
             onPress={() => navigation.navigate("StopDetail", { stopId: String(item.stopId) })}
           >
             <Text style={styles.stopName}>{name}</Text>
-            <Text style={styles.stopMeta}>Nº {item.stopId}</Text>
+            <Text style={styles.stopMeta}>
+              Nº {item.stopId}
+              {item.metersToPoint != null ? ` · a ${item.metersToPoint} m` : ""}
+            </Text>
+            {lines ? <Text style={styles.stopLines}>Líneas: {lines}</Text> : null}
           </Pressable>
         );
       }}
@@ -166,4 +174,5 @@ const styles = StyleSheet.create({
   },
   stopName: { fontSize: 16, fontWeight: "600" },
   stopMeta: { color: "#666", marginTop: 4 },
+  stopLines: { color: "#1565c0", marginTop: 4, fontSize: 13 },
 });
