@@ -23,14 +23,14 @@ async function fetchWithTimeout(url, ms = 45000) {
 }
 
 export async function fetchArrivals(stopId) {
-  const res = await fetchWithTimeout(`${BASE_URL}/api/llegadas/${stopId}`);
+  const res = await fetchWithTimeout(`${https://madrid-bus-backend.onrender.com}/api/llegadas/${stopId}`);
   if (!res.ok) throw new Error("No se pudo obtener las llegadas");
   return res.json();
 }
 
 export async function fetchNearbyStops(lat, lon, radio = 300) {
   const res = await fetchWithTimeout(
-    `${BASE_URL}/api/paradas/cercanas?lat=${lat}&lon=${lon}&radio=${radio}`
+    `${https://madrid-bus-backend.onrender.com}/api/paradas/cercanas?lat=${lat}&lon=${lon}&radio=${radio}`
   );
   if (!res.ok) throw new Error("No se pudieron obtener las paradas cercanas");
   return res.json();
