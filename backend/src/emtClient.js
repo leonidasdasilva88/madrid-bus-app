@@ -7,6 +7,20 @@
 
 const BASE_URL = "https://openapi.emtmadrid.es/v2";
 
+
+// fetch con límite de tiempo y un reintento si la conexión falla o se cuelga
+// (la API de EMT a veces corta o no responde a conexiones reutilizadas).
+async function emtFetch(url, options = {}, ms = 15000) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      return await fetch(url, { ...options, signal: AbortSignal.timeout(ms) });
+    } catch (err) {
+      console.log(`emtFetch intento ${attempt} falló:`, err.name, err.message);
+      if (attempt === 2) throw err;
+    }
+  }
+}
+
 let cachedToken = null;
 let tokenExpiresAt = 0; // timestamp en ms
 
@@ -40,7 +54,7 @@ async function getToken() {
     );
   }
 
-  const response = await fetch(`${BASE_URL}/mobilitylabs/user/login/`, {
+  const response = await emtFetch(`${BASE_URL}/mobilitylabs/user/login/`, {
     method: "GET",
     headers: {
       ...headers,
@@ -79,7 +93,7 @@ async function getToken() {
 async function getArrivals(stopId) {
   const token = await getToken();
 
-  const response = await fetch(
+  const response = await emtFetch(
     `https://openapi.emtmadrid.es/v3/transport/busemtmad/stops/${stopId}/arrives/all/`,
     {
       method: "POST",
@@ -119,7 +133,7 @@ async function getNearbyStops(lat, lon, radius = 300) {
 
   // Endpoint de la API EMT: paradas alrededor de un punto (OJO: "arroundxy" va así, con doble r).
   // El orden en la URL es longitud, latitud, radio.
-  const response = await fetch(
+  const response = await emtFetch(
     `${BASE_URL}/transport/busemtmad/stops/arroundxy/${lon}/${lat}/${radius}/`,
     {
       method: "GET",

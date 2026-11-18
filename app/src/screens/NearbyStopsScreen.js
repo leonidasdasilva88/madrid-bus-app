@@ -3,25 +3,55 @@ import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from "
 import * as Location from "expo-location";
 import { fetchNearbyStops } from "../api/client";
 
-const GPS_TIMEOUT_MS = 15000;
+const GPS_TIMEOUT_MS = 12000;
 
-// Obtiene la posición con un tiempo límite; si el GPS no responde, usa la última
-// ubicación conocida del móvil (suficiente para buscar paradas a ~300 m).
-async function getPosition() {
-  const servicesOn = await Location.hasServicesEnabledAsync();
-  if (!servicesOn) {
-    throw new Error("La ubicación del móvil está desactivada. Actívala e inténtalo de nuevo.");
+// Cualquier paso que se cuelgue acaba en error en vez de esperar para siempre.
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+async function ensurePermission() {
+  const current = await withTimeout(
+    Location.getForegroundPermissionsAsync(),
+    8000,
+    "No se pudo comprobar el permiso de ubicación."
+  );
+  if (current.status === "granted") return;
+  const asked = await withTimeout(
+    Location.requestForegroundPermissionsAsync(),
+    60000,
+    "No se obtuvo respuesta al permiso de ubicación."
+  );
+  if (asked.status !== "granted") {
+    throw new Error("Necesitamos permiso de ubicación para buscar paradas cercanas.");
   }
+}
 
-  const timeout = new Promise((resolve) => setTimeout(() => resolve(null), GPS_TIMEOUT_MS));
-  const current = Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-  const position = await Promise.race([current, timeout]);
-  if (position) return position;
+// 1) Ubicación reciente del móvil (instantánea). 2) Si no hay, pide una nueva con
+// precisión baja (más rápida y fiable). Para buscar paradas a ~300 m basta.
+async function getPosition() {
+  const recent = await withTimeout(
+    Location.getLastKnownPositionAsync({ maxAge: 5 * 60 * 1000 }),
+    5000,
+    "No se pudo leer la última ubicación."
+  ).catch(() => null);
+  if (recent) return recent;
 
-  const lastKnown = await Location.getLastKnownPositionAsync();
-  if (lastKnown) return lastKnown;
-
-  throw new Error("No se pudo obtener tu ubicación. Prueba a salir a un lugar con mejor señal.");
+  try {
+    return await withTimeout(
+      Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }),
+      GPS_TIMEOUT_MS,
+      "El móvil no consigue tu ubicación. Comprueba que la ubicación está activada y prueba a salir a un sitio con mejor señal."
+    );
+  } catch (err) {
+    const old = await Location.getLastKnownPositionAsync().catch(() => null);
+    if (old) return old;
+    throw err;
+  }
 }
 
 export default function NearbyStopsScreen({ navigation }) {
@@ -29,29 +59,42 @@ export default function NearbyStopsScreen({ navigation }) {
   const [status, setStatus] = useState("Obteniendo tu ubicación…");
   const [error, setError] = useState(null);
   const [stops, setStops] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setElapsed(0);
+    const t0 = Date.now();
+    const log = (m) => console.log(`[Cercanas +${Date.now() - t0}ms] ${m}`);
     try {
-      setStatus("Obteniendo tu ubicación…");
-      const { status: perm } = await Location.requestForegroundPermissionsAsync();
-      if (perm !== "granted") {
-        throw new Error("Necesitamos permiso de ubicación para buscar paradas cercanas.");
-      }
+      setStatus("Comprobando permiso de ubicación…");
+      await ensurePermission();
+      log("permiso ok");
 
+      setStatus("Obteniendo tu ubicación…");
       const position = await getPosition();
       const { latitude, longitude } = position.coords;
+      log("ubicación obtenida");
 
       setStatus("Buscando paradas cercanas…");
       const data = await fetchNearbyStops(latitude, longitude);
+      log("respuesta del servidor");
       setStops(Array.isArray(data?.data) ? data.data : []);
     } catch (err) {
+      log(`error: ${err.message}`);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Contador de segundos mientras carga (ayuda a ver en qué paso se queda)
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
 
   useEffect(() => {
     load();
@@ -62,6 +105,7 @@ export default function NearbyStopsScreen({ navigation }) {
       <View style={styles.center}>
         <ActivityIndicator size="large" />
         <Text>{status}</Text>
+        <Text style={styles.elapsed}>{elapsed} s</Text>
       </View>
     );
   }
@@ -107,6 +151,7 @@ export default function NearbyStopsScreen({ navigation }) {
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24, gap: 12 },
   error: { color: "#c62828", textAlign: "center" },
+  elapsed: { color: "#888", fontSize: 12 },
   retryButton: {
     backgroundColor: "#1565c0",
     paddingVertical: 12,
